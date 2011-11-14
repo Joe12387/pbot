@@ -1,7 +1,25 @@
 <?php
 /*
  *
- * pbot: an IRC Bot PHP class
+ * This file is part of pbot: an IRC Bot PHP class
+ *   by Joe Rutkowski (Joe12387)
+ *     <http://twitter.com/Joe12387>
+ *     <http://www.joe12387.com/>
+ *
+ * <http://github.com/Joe12387/pbot>
+ *
+ * pbot is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * pbot is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with pbot. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -10,6 +28,18 @@ define("RECEIVED", " >> ");
 define("ERROR",    " !! ");
 
 class pbot {
+  /*
+   *
+   * @param str $host
+   *   Host to connect to
+   *
+   * @param int $port
+   *   [optional] Port to connect to, defaults to 6667
+   *
+   * @param bool $ssl
+   *   [optional] Whether SSL should be used (must be accepted by the server)
+   *
+   */
   public function __construct($host, $port=6667, $ssl=false) {
     $this->host   = $host;
     $this->port   = $port;
@@ -67,7 +97,7 @@ class pbot {
    * @return bool
    *   false on failure
    *
-   * <https://tools.ietf.org/html/rfc1459#section-4.1>
+   * <http://tools.ietf.org/html/rfc1459#section-4.1>
    *
    */
   public function connect($nick, $username, $hostname, $servername, $realname, $pass=null, $timeout=10) {
@@ -176,7 +206,7 @@ class pbot {
    * Issues JOIN command to join a channel w/ key, if provided
    *
    * @param str $channel
-   *   Channel to join
+   *   Channel to join, add commas between channels to join more than one at once
    *
    * @param str $key
    *   [optional] Key for the channel
@@ -184,10 +214,10 @@ class pbot {
    * @return bool
    *   false on failure
    *
-   * <https://tools.ietf.org/html/rfc1459#section-4.2.1>
+   * <http://tools.ietf.org/html/rfc1459#section-4.2.1>
    *
    */
-  public function doJOIN($channel, $key=null) { //does not support multiple channel JOIN
+  public function doJOIN($channel, $key=null) {
     if (!$this->status) return false;
 
     if (substr($channel, 0, 1) != "#") {
@@ -206,15 +236,15 @@ class pbot {
    * Issues PART command to leave a channel
    *
    * @param str $channel
-   *   Channel to part
+   *   Channel to part, add commas between channels to leave more than one at once
    *
    * @return bool
    *   false on failure
    *
-   * <https://tools.ietf.org/html/rfc1459#section-4.2.2>
+   * <http://tools.ietf.org/html/rfc1459#section-4.2.2>
    *
    */
-  public function doPART($channel) { //does not support multiple channel PART
+  public function doPART($channel) {
     if (!$this->status) return false;
     
     if (substr($channel, 0, 1) != "#") {
@@ -223,6 +253,83 @@ class pbot {
     }
     
     if ($this->send("PART {$channel}")) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+  /*
+   *
+   * Issues MODE command to change modes on a channel or username
+   *
+   * @param str $target
+   *   Channel or username to change modes on
+   *
+   * @param str $flags
+   *   Flags to be added or removed (requires +/- signs to be prefixed)
+   *
+   * @param str $additional
+   *   [optional] Space for limit, user, and ban mask to be added (channel only), see RFC 1459
+   *
+   * @return bool
+   *   false on failure
+   *
+   * <http://tools.ietf.org/html/rfc1459#section-4.2.3>
+   *
+   */
+  public function doMODE($target, $flags, $additional=null) 
+    if (!$this->status) return false;
+
+    if ($this->send("MODE {$target} {$flags} {$additional}")) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+  /*
+   *
+   * Issues TOPIC command to view or change the topic in a channel
+   *
+   * @param str $channel
+   *   Channel to view or change the topic of
+   *
+   * @param str $topic
+   *   [optional] Topic to change to, returns current topic if not provided
+   *
+   * @return bool
+   *   false on failure
+   *
+   * <http://tools.ietf.org/html/rfc1459#section-4.2.4>
+   *
+   */
+  public function doTOPIC($channel, $topic=null) 
+    if (!$this->status) return false;
+
+    if (substr($channel, 0, 1) != "#") {
+      $channel = "#".$channel;
+      trigger_error("Channel name lacks '#', assuming ".$channel, E_USER_NOTICE);
+    }
+
+    if ($this->send("TOPIC {$channel} {$topic}")) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+  /*
+   *
+   * Issues LIST command to view channel list
+   *
+   * @return bool
+   *   false on failure
+   *
+   * <http://tools.ietf.org/html/rfc1459#section-4.2.6>
+   *
+   */
+  public function doLIST() 
+    if (!$this->status) return false;
+
+    if ($this->send("LIST")) {
       return true;
     } else {
       return false;
